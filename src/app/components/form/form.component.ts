@@ -85,6 +85,19 @@ export class FormComponent implements OnInit {
       'password',
       ['required']
     ),
+    new FormField(
+      'Password',
+      'password',
+      'Password',
+      'group',
+      [],
+      true,
+      8,
+      null,
+      [],
+      'password',
+      ['required']
+    ),
   ];
 
   dynamicForm!: FormGroup;
