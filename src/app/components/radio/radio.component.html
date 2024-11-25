@@ -1,4 +1,11 @@
+<p>{{ field.title }}</p>
 <ng-container *ngFor="let option of field.options">
-  <input type="radio" [id]="field.id" [name]="field.key" [value]="option" />
-  <label for="javascript">{{ option }}</label>
+  <input
+    type="radio"
+    [id]="field.id"
+    [name]="field.key"
+    [formControl]="formControl"
+    [value]="option"
+  />
+  <label [for]="field.id">{{ option }}</label>
 </ng-container>

@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { FormField } from '../../models/form-field.model';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -12,4 +12,5 @@ import { CommonModule } from '@angular/common';
 })
 export class RadioComponent {
   @Input() field!: FormField;
+  @Input() formControl!: FormControl;
 }

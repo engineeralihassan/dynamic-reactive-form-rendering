@@ -1,33 +1,37 @@
-import { Component } from '@angular/core';
-import { FormField } from '../../models/form-field.model';
+import {
+  Component,
+  ComponentFactoryResolver,
+  ViewChild,
+  OnInit,
+} from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
-  Validators,
-  ValidatorFn,
   FormsModule,
   ReactiveFormsModule,
+  ValidatorFn,
+  Validators,
 } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { FormField } from '../../models/form-field.model';
 import { TextInputComponent } from '../text-input/text-input.component';
 import { RadioComponent } from '../radio/radio.component';
 import { SelectBoxComponent } from '../select-box/select-box.component';
+import { ComponentHostDirective } from '../../directives/component-host.directive';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-form',
   standalone: true,
   imports: [
-    FormsModule,
     ReactiveFormsModule,
+    FormsModule,
     CommonModule,
-    TextInputComponent,
-    RadioComponent,
-    SelectBoxComponent,
+    ComponentHostDirective,
   ],
   templateUrl: './form.component.html',
-  styleUrl: './form.component.scss',
+  styleUrls: ['./form.component.scss'],
 })
-export class FormComponent {
+export class FormComponent implements OnInit {
   formFields: FormField[] = [
     new FormField(
       'First Name',
@@ -56,17 +60,17 @@ export class FormComponent {
       ['required']
     ),
     new FormField(
-      'Last Name',
-      'lastname',
-      'Last Name',
-      'text',
-      [],
+      'Hobby',
+      'hobby',
+      'Hobby',
+      'radio',
+      ['Cricket', 'Gaming', 'Reading'],
       true,
       2,
       10,
       [],
-      'lastname',
-      ['required', 'minLength']
+      'hobby',
+      ['required']
     ),
     new FormField(
       'Password',
@@ -85,8 +89,24 @@ export class FormComponent {
 
   dynamicForm!: FormGroup;
 
-  constructor(private fb: FormBuilder) {
+  @ViewChild(ComponentHostDirective, { static: true })
+  dynamicHost!: ComponentHostDirective;
+
+  private componentMap: Record<string, any> = {
+    text: TextInputComponent,
+    password: TextInputComponent,
+    select: SelectBoxComponent,
+    radio: RadioComponent,
+  };
+
+  constructor(
+    private fb: FormBuilder,
+    private componentFactoryResolver: ComponentFactoryResolver
+  ) {}
+
+  ngOnInit() {
     this.dynamicForm = this.createForm(this.formFields);
+    this.loadDynamicComponents();
   }
 
   createForm(fields: FormField[]): FormGroup {
@@ -99,32 +119,33 @@ export class FormComponent {
   }
 
   makeValidators(field: FormField): ValidatorFn[] {
-    const validators: any = [];
-
-    if (field.required) {
-      validators.push(Validators.required);
-    }
-    if (!!field.minLength) {
-      validators.push(Validators.minLength(field.minLength));
-    }
-    if (!!field.maxLength) {
-      validators.push(Validators.maxLength(field.maxLength));
-    }
-
+    const validators: ValidatorFn[] = [];
+    if (field.required) validators.push(Validators.required);
+    if (field.minLength) validators.push(Validators.minLength(field.minLength));
+    if (field.maxLength) validators.push(Validators.maxLength(field.maxLength));
     return validators;
+  }
+
+  loadDynamicComponents() {
+    const viewContainerRef = this.dynamicHost.viewContainerRef;
+    viewContainerRef.clear();
+
+    this.formFields.forEach((field) => {
+      const componentType = this.componentMap[field.type];
+      if (componentType) {
+        const componentFactory =
+          this.componentFactoryResolver.resolveComponentFactory(componentType);
+        const componentRef = viewContainerRef.createComponent(componentFactory);
+        (componentRef.instance as any).field = field;
+        (componentRef.instance as any).formControl = this.dynamicForm.get(
+          field.key
+        );
+      }
+    });
   }
 
   onSubmit() {
     console.log(this.dynamicForm.value);
-    alert('Form Submitted Successfully😘');
-  }
-  private componentMap: Record<string, any> = {
-    text: TextInputComponent,
-    password: TextInputComponent,
-    select: SelectBoxComponent,
-    radio: RadioComponent,
-  };
-  resolveComponent(type: string): any {
-    return this.componentMap[type] || null;
+    alert('Form Submitted Successfully!');
   }
 }

@@ -1,14 +1,4 @@
-<form [formGroup]="dynamicForm" (ngSubmit)="onSubmit()" class="container-form">
-  <div class="form-feild">
-    <ng-container *ngFor="let field of formFields">
-      <ng-container
-        *ngComponentOutlet="
-          resolveComponent(field.type);
-          context: { $implicit: field }
-        "
-      ></ng-container>
-    </ng-container>
-  </div>
-
+<form class="container-form" [formGroup]="dynamicForm" (ngSubmit)="onSubmit()">
+  <ng-container appComponentHost></ng-container>
   <button type="submit">Submit</button>
 </form>
