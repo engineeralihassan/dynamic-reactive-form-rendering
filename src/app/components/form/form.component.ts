@@ -1,9 +1,4 @@
-import {
-  Component,
-  ComponentFactoryResolver,
-  ViewChild,
-  OnInit,
-} from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -16,7 +11,6 @@ import { TextInputComponent } from '../text-input/text-input.component';
 import { RadioComponent } from '../radio/radio.component';
 import { SelectBoxComponent } from '../select-box/select-box.component';
 import { ComponentHostDirective } from '../../directives/component-host.directive';
-import { Text } from '@angular/compiler';
 
 @Component({
   selector: 'app-form',
@@ -91,6 +85,70 @@ export class FormComponent implements OnInit {
         ),
       ]
     ),
+    new FormField(
+      'Phone',
+      'phone',
+      'Phone',
+      'number',
+      [],
+      true,
+      2,
+      10,
+      [],
+      'age',
+      []
+    ),
+    new FormField(
+      'message',
+      'message',
+      'message',
+      'text',
+      [],
+      true,
+      2,
+      10,
+      [],
+      'message',
+      []
+    ),
+    new FormField(
+      'Educationm',
+      'educationroup',
+      'Education',
+      'group',
+      [],
+      false,
+      null,
+      null,
+      [
+        new FormField(
+          'Education',
+          'education',
+          'Education',
+          'text',
+          [],
+          false,
+          2,
+          100,
+          [],
+          '',
+          []
+        ),
+        new FormField(
+          '',
+          'country',
+          'Country',
+          'text',
+          [],
+          false,
+          2,
+          100,
+          [],
+          'country',
+          []
+        ),
+      ]
+    ),
   ];
 
   dynamicForm!: FormGroup;
@@ -106,10 +164,7 @@ export class FormComponent implements OnInit {
     radio: RadioComponent,
   };
 
-  constructor(
-    private fb: FormBuilder,
-    private componentFactoryResolver: ComponentFactoryResolver
-  ) {}
+  constructor(private fb: FormBuilder) {}
 
   ngOnInit() {
     this.dynamicForm = this.createForm(this.formFields);
@@ -146,12 +201,7 @@ export class FormComponent implements OnInit {
       } else {
         const componentType = this.componentMap[field.type];
         if (componentType) {
-          const componentFactory =
-            this.componentFactoryResolver.resolveComponentFactory(
-              componentType
-            );
-          const componentRef =
-            viewContainerRef.createComponent(componentFactory);
+          const componentRef = viewContainerRef.createComponent(componentType);
           (componentRef.instance as any).field = field;
           (componentRef.instance as any).formControl =
             this.dynamicForm.get(fieldKey);
