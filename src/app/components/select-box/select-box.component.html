@@ -1,5 +1,4 @@
 <select [id]="field.id" [formControl]="formControl">
-  <option value="select" selected>Select</option>
   <option *ngFor="let option of field.options" [value]="option">
     {{ option }}
   </option>
