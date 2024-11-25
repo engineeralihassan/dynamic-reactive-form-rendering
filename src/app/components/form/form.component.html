@@ -1,4 +1,4 @@
 <form class="container-form" [formGroup]="dynamicForm" (ngSubmit)="onSubmit()">
   <ng-container appComponentHost></ng-container>
-  <button type="submit">Submit</button>
+  <button type="submit" [disabled]="dynamicForm.invalid">Submit</button>
 </form>

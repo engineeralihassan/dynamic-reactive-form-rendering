@@ -7,7 +7,6 @@ import {
 import {
   FormBuilder,
   FormGroup,
-  FormsModule,
   ReactiveFormsModule,
   ValidatorFn,
   Validators,
@@ -17,17 +16,12 @@ import { TextInputComponent } from '../text-input/text-input.component';
 import { RadioComponent } from '../radio/radio.component';
 import { SelectBoxComponent } from '../select-box/select-box.component';
 import { ComponentHostDirective } from '../../directives/component-host.directive';
-import { CommonModule } from '@angular/common';
+import { Text } from '@angular/compiler';
 
 @Component({
   selector: 'app-form',
   standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    FormsModule,
-    CommonModule,
-    ComponentHostDirective,
-  ],
+  imports: [ReactiveFormsModule, ComponentHostDirective],
   templateUrl: './form.component.html',
   styleUrls: ['./form.component.scss'],
 })
@@ -44,59 +38,58 @@ export class FormComponent implements OnInit {
       10,
       [],
       'firstname',
-      ['required', 'minLength']
+      []
     ),
     new FormField(
-      'Gender',
-      'gender',
-      'Gender',
-      'select',
-      ['Male', 'Female', 'Other'],
+      'Age',
+      'age',
+      'Age',
+      'number',
+      [],
       true,
       2,
       10,
       [],
-      'gender',
-      ['required']
+      'age',
+      []
     ),
     new FormField(
-      'Hobby',
-      'hobby',
-      'Hobby',
-      'radio',
-      ['Cricket', 'Gaming', 'Reading'],
-      true,
-      2,
-      10,
-      [],
-      'hobby',
-      ['required']
-    ),
-    new FormField(
-      'Password',
-      'password',
-      'Password',
-      'password',
-      [],
-      true,
-      8,
-      null,
-      [],
-      'password',
-      ['required']
-    ),
-    new FormField(
-      'Password',
-      'password',
-      'Password',
+      'Address',
+      'addressGroup',
+      'Address',
       'group',
       [],
-      true,
-      8,
+      false,
       null,
-      [],
-      'password',
-      ['required']
+      null,
+      [
+        new FormField(
+          'Street Address',
+          'street',
+          'Street Address',
+          'text',
+          [],
+          true,
+          2,
+          100,
+          [],
+          'street',
+          []
+        ),
+        new FormField(
+          'Country',
+          'country',
+          'Country',
+          'text',
+          [],
+          true,
+          2,
+          100,
+          [],
+          'country',
+          []
+        ),
+      ]
     ),
   ];
 
@@ -108,6 +101,7 @@ export class FormComponent implements OnInit {
   private componentMap: Record<string, any> = {
     text: TextInputComponent,
     password: TextInputComponent,
+    number: TextInputComponent,
     select: SelectBoxComponent,
     radio: RadioComponent,
   };
@@ -125,8 +119,12 @@ export class FormComponent implements OnInit {
   createForm(fields: FormField[]): FormGroup {
     const group: { [key: string]: any } = {};
     fields.forEach((field) => {
-      const validators = this.makeValidators(field);
-      group[field.key] = this.fb.control('', validators);
+      if (field.type === 'group' && field.nestedFields?.length) {
+        group[field.key] = this.createForm(field.nestedFields);
+      } else {
+        const validators = this.makeValidators(field);
+        group[field.key] = this.fb.control('', validators);
+      }
     });
     return this.fb.group(group);
   }
@@ -139,26 +137,30 @@ export class FormComponent implements OnInit {
     return validators;
   }
 
-  loadDynamicComponents() {
+  loadDynamicComponents(fields: FormField[] = this.formFields, parentKey = '') {
     const viewContainerRef = this.dynamicHost.viewContainerRef;
-    viewContainerRef.clear();
-
-    this.formFields.forEach((field) => {
-      const componentType = this.componentMap[field.type];
-      if (componentType) {
-        const componentFactory =
-          this.componentFactoryResolver.resolveComponentFactory(componentType);
-        const componentRef = viewContainerRef.createComponent(componentFactory);
-        (componentRef.instance as any).field = field;
-        (componentRef.instance as any).formControl = this.dynamicForm.get(
-          field.key
-        );
+    fields.forEach((field) => {
+      const fieldKey = parentKey ? `${parentKey}.${field.key}` : field.key;
+      if (field.type === 'group' && field.nestedFields?.length) {
+        this.loadDynamicComponents(field.nestedFields, fieldKey);
+      } else {
+        const componentType = this.componentMap[field.type];
+        if (componentType) {
+          const componentFactory =
+            this.componentFactoryResolver.resolveComponentFactory(
+              componentType
+            );
+          const componentRef =
+            viewContainerRef.createComponent(componentFactory);
+          (componentRef.instance as any).field = field;
+          (componentRef.instance as any).formControl =
+            this.dynamicForm.get(fieldKey);
+        }
       }
     });
   }
 
   onSubmit() {
     console.log(this.dynamicForm.value);
-    alert('Form Submitted Successfully!');
   }
 }
