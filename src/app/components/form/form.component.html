@@ -1,4 +1,46 @@
 <form class="container-form" [formGroup]="dynamicForm" (ngSubmit)="onSubmit()">
   <ng-container appComponentHost></ng-container>
-  <button type="submit" [disabled]="dynamicForm.invalid">Submit</button>
+  <ng-template #formArrayButtonsHost></ng-template>
+  <button type="submit">Submit</button>
 </form>
+<app-button [text]="'Hello'"></app-button>
+
+<!-- <form class="container-form" [formGroup]="dynamicForm" (ngSubmit)="onSubmit()">
+  <ng-container *ngFor="let field of formFields">
+    <ng-container [ngSwitch]="field.type">
+      <ng-container *ngSwitchCase="'text'">
+        <label>{{ field.label }}</label>
+        <input [id]="field.key" [formControlName]="field.key" type="text" />
+      </ng-container>
+      <ng-container *ngSwitchCase="'number'">
+        <label [for]="field.key">{{ field.label }}</label>
+        <input [id]="field.key" [formControlName]="field.key" type="number" />
+      </ng-container>
+      <ng-container *ngSwitchCase="'group'">
+        <div formArrayName="{{ field.key }}">
+          <div
+            *ngFor="let group of getFormArrayControls(field.key); let i = index"
+            [formGroupName]="i"
+          >
+            <label>{{ field.label }} {{ i + 1 }}</label>
+            <ng-container *ngFor="let nestedField of field?.nestedFields">
+              <label [for]="nestedField.key">{{ nestedField.label }}</label>
+              <input
+                [id]="nestedField.key"
+                [formControlName]="nestedField.key"
+                [type]="nestedField.type"
+              />
+            </ng-container>
+          </div>
+          <button
+            type="button"
+            (click)="addGroupToFormArray(field.key, field.nestedFields)"
+          >
+            Add {{ field.label }}
+          </button>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+  <button type="submit">Submit</button>
+</form> -->
