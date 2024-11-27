@@ -1,4 +1,10 @@
-import { Component, ViewChild, OnInit, ViewContainerRef } from '@angular/core';
+import {
+  Component,
+  ViewChild,
+  OnInit,
+  ViewContainerRef,
+  Renderer2,
+} from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -17,6 +23,7 @@ import { RadioComponent } from '../radio/radio.component';
 import { FormControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { CheckboxComponent } from '../checkbox/checkbox.component';
+import { ButtonComponent } from '../button/button.component';
 
 @Component({
   selector: 'app-form',
@@ -50,9 +57,11 @@ export class FormComponent implements OnInit {
     radio: RadioComponent,
   };
 
-  constructor(private fb: FormBuilder, private dataService: DataService) {
-    // this.formFields = this.dataService.formData;
-  }
+  constructor(
+    private fb: FormBuilder,
+    private dataService: DataService,
+    private renderer: Renderer2
+  ) {}
 
   ngOnInit() {
     this.dataService.getFormData().subscribe((data: FormField[]) => {
@@ -61,8 +70,6 @@ export class FormComponent implements OnInit {
       this.loadDynamicComponents();
       this.isDataLoading = false;
     });
-    // this.dynamicForm = this.createForm(this.formFields);
-    // this.loadDynamicComponents();
   }
 
   createForm(fields: FormField[]): FormGroup {
@@ -111,15 +118,29 @@ export class FormComponent implements OnInit {
           const nestedKey = `${fieldKey}[${index}]`;
           this.loadDynamicComponents(field.nestedFields, nestedKey);
         });
+        const buttonRef = viewContainerRef.createComponent(ButtonComponent);
+        buttonRef.instance.label = 'Add Group';
+        buttonRef.instance.type = 'button';
+        buttonRef.instance.clickEvent.subscribe(() =>
+          this.addFormGroup(fieldKey, field.nestedFields)
+        );
       } else {
         const componentType =
-          this.componentMap[field.type] || TextInputComponent; // Default to TextInputComponent
+          this.componentMap[field.type] || TextInputComponent;
         const componentRef = viewContainerRef.createComponent(componentType);
         (componentRef.instance as any).field = field;
         (componentRef.instance as any).formControl =
           this.dynamicForm.get(fieldKey);
       }
     });
+  }
+  addFormGroup(arrayKey: string, nestedFields: FormField[] | undefined) {
+    if (!nestedFields) return;
+    const formArray = this.dynamicForm.get(arrayKey) as FormArray;
+    const newGroup = this.createGroupFromNestedFields(nestedFields);
+    formArray.push(newGroup);
+    const newGroupKey = `${arrayKey}[${formArray.length - 1}]`;
+    this.loadDynamicComponents(nestedFields, newGroupKey);
   }
 
   onSubmit() {
