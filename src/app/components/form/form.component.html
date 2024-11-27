@@ -1,4 +1,9 @@
-<form class="container-form" [formGroup]="dynamicForm" (ngSubmit)="onSubmit()">
+<form
+  class="container-form"
+  [formGroup]="dynamicForm"
+  (ngSubmit)="onSubmit()"
+  [ngStyle]="{ display: isDataLoading ? 'none' : 'block' }"
+>
   <ng-container appComponentHost></ng-container>
   <button type="submit">Submit</button>
 </form>

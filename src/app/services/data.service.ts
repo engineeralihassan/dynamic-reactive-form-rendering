@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { FormField } from '../models/form-field.model';
+import { of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -146,39 +147,10 @@ export class DataService {
         new FormField('', 'date', '', 'Date', 'date', [], true),
       ]
     ),
-    new FormField(
-      'Accident / incident recorded by',
-      'references-new',
-      '',
-      '',
-      'group',
-      [],
-      true,
-      0,
-      0,
-      [
-        new FormField('', 'recorderName', '', 'Name in full', 'text', [], true),
-        new FormField('', 'jobTitle', '', 'Job title', 'text', [], true),
-        new FormField('', 'date', '', 'Date', 'date', [], true),
-      ]
-    ),
-    new FormField(
-      'Accident / incident recorded by',
-      'references-new-new',
-      '',
-      '',
-      'group',
-      [],
-      true,
-      0,
-      0,
-      [
-        new FormField('', 'recorderName', '', 'Name in full', 'text', [], true),
-        new FormField('', 'jobTitle', '', 'Job title', 'text', [], true),
-        new FormField('', 'date', '', 'Date', 'date', [], true),
-      ]
-    ),
   ];
 
   constructor() {}
+  getFormData() {
+    return of(this.formData);
+  }
 }

@@ -1,49 +1,49 @@
 import { Component, ViewChild, OnInit, ViewContainerRef } from '@angular/core';
 import {
-  AbstractControl,
-  FormArray,
   FormBuilder,
   FormGroup,
-  ReactiveFormsModule,
-  ValidatorFn,
   Validators,
+  FormArray,
+  ValidatorFn,
+  FormsModule,
+  ReactiveFormsModule,
 } from '@angular/forms';
+import { DataService } from '../../services/data.service';
+import { ComponentHostDirective } from '../../directives/component-host.directive';
 import { FormField } from '../../models/form-field.model';
 import { TextInputComponent } from '../text-input/text-input.component';
-import { RadioComponent } from '../radio/radio.component';
 import { SelectBoxComponent } from '../select-box/select-box.component';
-import { ComponentHostDirective } from '../../directives/component-host.directive';
+import { RadioComponent } from '../radio/radio.component';
+import { FormControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ButtonComponent } from '../button/button.component';
-import { DataService } from '../../services/data.service';
+import { CheckboxComponent } from '../checkbox/checkbox.component';
 
 @Component({
   selector: 'app-form',
   standalone: true,
   imports: [
+    FormsModule,
     ReactiveFormsModule,
-    ComponentHostDirective,
     CommonModule,
-    ButtonComponent,
+    ComponentHostDirective,
   ],
   templateUrl: './form.component.html',
   styleUrls: ['./form.component.scss'],
 })
 export class FormComponent implements OnInit {
-  @ViewChild('formArrayButtonsHost', { read: ViewContainerRef, static: true })
-  formArrayHost!: ViewContainerRef;
-  formFields: FormField[] = [];
-
-  dynamicForm!: FormGroup;
-
   @ViewChild(ComponentHostDirective, { static: true })
   dynamicHost!: ComponentHostDirective;
+  isDataLoading: boolean = true;
+
+  dynamicForm!: FormGroup;
+  formFields: FormField[] = [];
 
   private componentMap: Record<string, any> = {
     text: TextInputComponent,
     password: TextInputComponent,
     number: TextInputComponent,
     time: TextInputComponent,
+    checkbox: CheckboxComponent,
     date: TextInputComponent,
     file: TextInputComponent,
     select: SelectBoxComponent,
@@ -51,27 +51,22 @@ export class FormComponent implements OnInit {
   };
 
   constructor(private fb: FormBuilder, private dataService: DataService) {
-    this.formFields = this.dataService.formData;
+    // this.formFields = this.dataService.formData;
   }
 
   ngOnInit() {
-    this.dynamicForm = this.createForm(this.formFields);
-    this.loadDynamicComponents();
-  }
-  addGroupToFormArray(arrayName: string, nestedFields: FormField[]) {
-    const formArray = this.dynamicForm.get(arrayName) as FormArray;
-    formArray.push(this.createGroupFromNestedFields(nestedFields));
+    this.dataService.getFormData().subscribe((data: FormField[]) => {
+      this.formFields = data;
+      this.dynamicForm = this.createForm(data);
+      this.loadDynamicComponents();
+      this.isDataLoading = false;
+    });
+    // this.dynamicForm = this.createForm(this.formFields);
+    // this.loadDynamicComponents();
   }
 
-  removeGroupFromFormArray(arrayName: string, index: number) {
-    const formArray = this.dynamicForm.get(arrayName) as FormArray;
-    if (formArray.length > 1) {
-      formArray.removeAt(index);
-    }
-  }
   createForm(fields: FormField[]): FormGroup {
     const group: { [key: string]: any } = {};
-
     fields.forEach((field) => {
       if (field.type === 'group' && field.nestedFields?.length) {
         group[field.key] = this.fb.array([
@@ -79,21 +74,22 @@ export class FormComponent implements OnInit {
         ]);
       } else {
         const validators = this.makeValidators(field);
-        group[field.key] = this.fb.control('', validators);
+        if (field.type === 'checkbox') {
+          group[field.key] = this.fb.control(false, validators);
+        } else {
+          group[field.key] = this.fb.control('', validators);
+        }
       }
     });
-
     return this.fb.group(group);
   }
 
   createGroupFromNestedFields(fields: FormField[]): FormGroup {
     const group: { [key: string]: any } = {};
-
     fields.forEach((field) => {
       const validators = this.makeValidators(field);
       group[field.key] = this.fb.control('', validators);
     });
-
     return this.fb.group(group);
   }
 
@@ -116,19 +112,17 @@ export class FormComponent implements OnInit {
           this.loadDynamicComponents(field.nestedFields, nestedKey);
         });
       } else {
-        const componentType = this.componentMap[field.type];
-        if (componentType) {
-          const componentRef = viewContainerRef.createComponent(componentType);
-          (componentRef.instance as any).field = field;
-          (componentRef.instance as any).formControl =
-            this.dynamicForm.get(fieldKey);
-        }
+        const componentType =
+          this.componentMap[field.type] || TextInputComponent; // Default to TextInputComponent
+        const componentRef = viewContainerRef.createComponent(componentType);
+        (componentRef.instance as any).field = field;
+        (componentRef.instance as any).formControl =
+          this.dynamicForm.get(fieldKey);
       }
     });
   }
 
   onSubmit() {
-    alert('submitted');
     console.log(this.dynamicForm.value);
   }
 }
