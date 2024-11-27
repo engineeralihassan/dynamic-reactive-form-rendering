@@ -2,6 +2,7 @@ export class FormField {
   constructor(
     public title: string,
     public key: string,
+    public name: string,
     public label: string,
     public type: string,
     public options?: string[],

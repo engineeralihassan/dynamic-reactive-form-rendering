@@ -1,9 +1,7 @@
 <form class="container-form" [formGroup]="dynamicForm" (ngSubmit)="onSubmit()">
   <ng-container appComponentHost></ng-container>
-  <ng-template #formArrayButtonsHost></ng-template>
   <button type="submit">Submit</button>
 </form>
-<app-button [text]="'Hello'"></app-button>
 
 <!-- <form class="container-form" [formGroup]="dynamicForm" (ngSubmit)="onSubmit()">
   <ng-container *ngFor="let field of formFields">
