@@ -3,17 +3,29 @@
     <ng-container [ngSwitch]="field.type">
       <ng-container *ngSwitchCase="'text'">
         <input [id]="field.key" [formControlName]="field.key" type="text" />
+        <div *ngIf="isFieldInvalid(field.key)">
+          <small class="error">This field is required.</small>
+        </div>
       </ng-container>
       <ng-container *ngSwitchCase="'number'">
         <input [id]="field.key" [formControlName]="field.key" type="number" />
+        <div *ngIf="isFieldInvalid(field.key)">
+          <small class="error">This field is required.</small>
+        </div>
       </ng-container>
       <ng-container *ngSwitchCase="'date'">
         <label>{{ field.label }}</label>
         <input [id]="field.key" [formControlName]="field.key" type="date" />
+        <div *ngIf="isFieldInvalid(field.key)">
+          <small class="error">This field is required.</small>
+        </div>
       </ng-container>
       <ng-container *ngSwitchCase="'file'">
         <label>{{ field.label }}</label>
         <input [id]="field.key" [formControlName]="field.key" type="file" />
+        <div *ngIf="isFieldInvalid(field.key)">
+          <small class="error">This field is required.</small>
+        </div>
       </ng-container>
       <ng-container *ngSwitchCase="'radio'">
         <label>{{ field.label }}</label>
@@ -27,10 +39,16 @@
             {{ option }}
           </label>
         </div>
+        <div *ngIf="isFieldInvalid(field.key)">
+          <small class="error">This field is required.</small>
+        </div>
       </ng-container>
       <ng-container *ngSwitchCase="'checkbox'">
         <label>{{ field.label }}</label>
         <input type="checkbox" [formControlName]="field.key" />
+        <div *ngIf="isFieldInvalid(field.key)">
+          <small class="error">This field is required.</small>
+        </div>
       </ng-container>
       <ng-container *ngSwitchCase="'select'">
         <label>{{ field.label }}</label>
@@ -39,6 +57,9 @@
             {{ option }}
           </option>
         </select>
+        <div *ngIf="isFieldInvalid(field.key)">
+          <small class="error">This field is required.</small>
+        </div>
       </ng-container>
       <ng-container *ngSwitchCase="'multi-checkbox'">
         <label>{{ field.label }}</label>
@@ -50,6 +71,9 @@
             />
             {{ option }}
           </label>
+        </div>
+        <div *ngIf="isFieldInvalid(field.key)">
+          <small class="error">This field is required.</small>
         </div>
       </ng-container>
       <ng-container *ngSwitchCase="'group'">
@@ -65,6 +89,9 @@
                 [formControlName]="nestedField.key"
                 [type]="nestedField.type"
               />
+              <div *ngIf="isFieldInvalid(nestedField.key)">
+                <small class="error">This field is required.</small>
+              </div>
             </ng-container>
             <button
               type="button"

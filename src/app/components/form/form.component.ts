@@ -84,7 +84,10 @@ export class FormComponent implements OnInit {
     const formArray = this.dynamicForm.get(fieldKey) as FormArray;
     formArray.removeAt(index);
   }
-
+  isFieldInvalid(fieldKey: string) {
+    const control = this.dynamicForm.get(fieldKey);
+    return control && (control.dirty || control.touched) && control.invalid;
+  }
   onSubmit(): void {
     if (this.dynamicForm?.valid) {
       console.log(this.dynamicForm?.value);
