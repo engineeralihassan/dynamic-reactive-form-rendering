@@ -4,6 +4,7 @@ import {
   OnInit,
   ViewContainerRef,
   Renderer2,
+  ChangeDetectorRef,
 } from '@angular/core';
 import {
   FormBuilder,
@@ -24,6 +25,7 @@ import { FormControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { CheckboxComponent } from '../checkbox/checkbox.component';
 import { ButtonComponent } from '../button/button.component';
+import { fromArrayLike } from 'rxjs/internal/observable/innerFrom';
 
 @Component({
   selector: 'app-form',
@@ -60,7 +62,8 @@ export class FormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private dataService: DataService,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -141,8 +144,23 @@ export class FormComponent implements OnInit {
     formArray.push(newGroup);
     const newGroupKey = `${arrayKey}[${formArray.length - 1}]`;
     this.loadDynamicComponents(nestedFields, newGroupKey);
+    // Add the "Remove Group" button dynamically
+    const viewContainerRef = this.dynamicHost.viewContainerRef;
+    const buttonRef = viewContainerRef.createComponent(ButtonComponent);
+    buttonRef.instance.label = 'Remove Group';
+    buttonRef.instance.type = 'button';
+    buttonRef.instance.clickEvent.subscribe(() =>
+      this.removeFormGroup(arrayKey, formArray.length - 1)
+    );
   }
 
+  removeFormGroup(arrayKey: string, index: number) {
+    const formArray = this.dynamicForm.get(arrayKey) as FormArray;
+    if (formArray && formArray.length > index) {
+      formArray.removeAt(index);
+      this.cdr.detectChanges();
+    }
+  }
   onSubmit() {
     console.log(this.dynamicForm.value);
   }
