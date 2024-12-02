@@ -26,6 +26,7 @@ import { CommonModule } from '@angular/common';
 import { CheckboxComponent } from '../checkbox/checkbox.component';
 import { ButtonComponent } from '../button/button.component';
 import { fromArrayLike } from 'rxjs/internal/observable/innerFrom';
+import { F } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-form',
@@ -122,7 +123,8 @@ export class FormComponent implements OnInit {
           this.loadDynamicComponents(field.nestedFields, nestedKey);
         });
         const buttonRef = viewContainerRef.createComponent(ButtonComponent);
-        buttonRef.instance.label = 'Add Group';
+
+        buttonRef.instance.label = `Add ${field.key}`;
         buttonRef.instance.type = 'button';
         buttonRef.instance.clickEvent.subscribe(() =>
           this.addFormGroup(fieldKey, field.nestedFields)
@@ -137,17 +139,15 @@ export class FormComponent implements OnInit {
       }
     });
   }
-  addFormGroup(arrayKey: string, nestedFields: FormField[] | undefined) {
-    if (!nestedFields) return;
+  addFormGroup(arrayKey: string, nestedFields: FormField[]) {
     const formArray = this.dynamicForm.get(arrayKey) as FormArray;
     const newGroup = this.createGroupFromNestedFields(nestedFields);
     formArray.push(newGroup);
     const newGroupKey = `${arrayKey}[${formArray.length - 1}]`;
     this.loadDynamicComponents(nestedFields, newGroupKey);
-    // Add the "Remove Group" button dynamically
     const viewContainerRef = this.dynamicHost.viewContainerRef;
     const buttonRef = viewContainerRef.createComponent(ButtonComponent);
-    buttonRef.instance.label = 'Remove Group';
+    buttonRef.instance.label = `Remove ${arrayKey}`;
     buttonRef.instance.type = 'button';
     buttonRef.instance.clickEvent.subscribe(() =>
       this.removeFormGroup(arrayKey, formArray.length - 1)
