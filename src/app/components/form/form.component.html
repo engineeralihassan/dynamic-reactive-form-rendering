@@ -1,25 +1,68 @@
-<form
-  class="container-form"
-  [formGroup]="dynamicForm"
-  (ngSubmit)="onSubmit()"
-  [ngStyle]="{ display: isDataLoading ? 'none' : 'block' }"
->
-  <ng-container appComponentHost></ng-container>
-  <div #dynamicButtonsContainer></div>
-  <button type="submit">Submit</button>
-</form>
-
-<!-- <form class="container-form" [formGroup]="dynamicForm" (ngSubmit)="onSubmit()">
+<form [formGroup]="dynamicForm" (ngSubmit)="onSubmit()">
   <ng-container *ngFor="let field of formFields">
     <ng-container [ngSwitch]="field.type">
+      <!-- Text Input -->
       <ng-container *ngSwitchCase="'text'">
         <label>{{ field.label }}</label>
         <input [id]="field.key" [formControlName]="field.key" type="text" />
       </ng-container>
+      <!-- Number Input -->
       <ng-container *ngSwitchCase="'number'">
-        <label [for]="field.key">{{ field.label }}</label>
+        <label>{{ field.label }}</label>
         <input [id]="field.key" [formControlName]="field.key" type="number" />
       </ng-container>
+      <!-- Date Input -->
+      <ng-container *ngSwitchCase="'date'">
+        <label>{{ field.label }}</label>
+        <input [id]="field.key" [formControlName]="field.key" type="date" />
+      </ng-container>
+      <!-- File Input -->
+      <ng-container *ngSwitchCase="'file'">
+        <label>{{ field.label }}</label>
+        <input [id]="field.key" [formControlName]="field.key" type="file" />
+      </ng-container>
+      <!-- Radio Buttons -->
+      <ng-container *ngSwitchCase="'radio'">
+        <label>{{ field.label }}</label>
+        <div *ngFor="let option of field.options">
+          <label>
+            <input
+              type="radio"
+              [formControlName]="field.key"
+              [value]="option"
+            />
+            {{ option }}
+          </label>
+        </div>
+      </ng-container>
+      <!-- Checkbox -->
+      <ng-container *ngSwitchCase="'checkbox'">
+        <label>{{ field.label }}</label>
+        <input type="checkbox" [formControlName]="field.key" />
+      </ng-container>
+      <!-- Select Input -->
+      <ng-container *ngSwitchCase="'select'">
+        <label>{{ field.label }}</label>
+        <select [formControlName]="field.key">
+          <option *ngFor="let option of field.options" [value]="option">
+            {{ option }}
+          </option>
+        </select>
+      </ng-container>
+      <!-- Multi-Select (checkbox) -->
+      <ng-container *ngSwitchCase="'multi-checkbox'">
+        <label>{{ field.label }}</label>
+        <div *ngFor="let option of field.options; let i = index">
+          <label>
+            <input
+              type="checkbox"
+              [formControlName]="field.key + '[' + i + ']'"
+            />
+            {{ option }}
+          </label>
+        </div>
+      </ng-container>
+      <!-- Group (FormArray) -->
       <ng-container *ngSwitchCase="'group'">
         <div formArrayName="{{ field.key }}">
           <div
@@ -27,10 +70,9 @@
             [formGroupName]="i"
           >
             <label>{{ field.label }} {{ i + 1 }}</label>
-            <ng-container *ngFor="let nestedField of field?.nestedFields">
-              <label [for]="nestedField.key">{{ nestedField.label }}</label>
+            <ng-container *ngFor="let nestedField of field.nestedFields">
+              <label>{{ nestedField.label }}</label>
               <input
-                [id]="nestedField.key"
                 [formControlName]="nestedField.key"
                 [type]="nestedField.type"
               />
@@ -47,4 +89,4 @@
     </ng-container>
   </ng-container>
   <button type="submit">Submit</button>
-</form> -->
+</form>

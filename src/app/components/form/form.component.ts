@@ -14,6 +14,7 @@ import {
   ValidatorFn,
   FormsModule,
   ReactiveFormsModule,
+  AbstractControl,
 } from '@angular/forms';
 import { DataService } from '../../services/data.service';
 import { ComponentHostDirective } from '../../directives/component-host.directive';
@@ -41,127 +42,48 @@ import { F } from '@angular/cdk/keycodes';
   styleUrls: ['./form.component.scss'],
 })
 export class FormComponent implements OnInit {
-  @ViewChild(ComponentHostDirective, { static: true })
-  dynamicHost!: ComponentHostDirective;
-  isDataLoading: boolean = true;
-
   dynamicForm!: FormGroup;
-  formFields: FormField[] = [];
+  formFields: any[] = [];
 
-  private componentMap: Record<string, any> = {
-    text: TextInputComponent,
-    password: TextInputComponent,
-    number: TextInputComponent,
-    time: TextInputComponent,
-    checkbox: CheckboxComponent,
-    date: TextInputComponent,
-    file: TextInputComponent,
-    select: SelectBoxComponent,
-    radio: RadioComponent,
-  };
-
-  constructor(
-    private fb: FormBuilder,
-    private dataService: DataService,
-    private renderer: Renderer2,
-    private cdr: ChangeDetectorRef
-  ) {}
-
-  ngOnInit() {
+  constructor(private fb: FormBuilder, private dataService: DataService) {
     this.dataService.getFormData().subscribe((data: FormField[]) => {
       this.formFields = data;
-      this.dynamicForm = this.createForm(data);
-      this.loadDynamicComponents();
-      this.isDataLoading = false;
     });
   }
 
-  createForm(fields: FormField[]): FormGroup {
-    const group: { [key: string]: any } = {};
-    fields.forEach((field) => {
-      if (field.type === 'group' && field.nestedFields?.length) {
-        group[field.key] = this.fb.array([
-          this.createGroupFromNestedFields(field.nestedFields),
-        ]);
+  ngOnInit(): void {
+    this.dynamicForm = this.fb.group({});
+    this.formFields.forEach((field) => {
+      if (field.type === 'group') {
+        this.dynamicForm.addControl(field.key, this.fb.array([]));
       } else {
-        const validators = this.makeValidators(field);
-        if (field.type === 'checkbox') {
-          group[field.key] = this.fb.control(false, validators);
-        } else {
-          group[field.key] = this.fb.control('', validators);
-        }
-      }
-    });
-    return this.fb.group(group);
-  }
-
-  createGroupFromNestedFields(fields: FormField[]): FormGroup {
-    const group: { [key: string]: any } = {};
-    fields.forEach((field) => {
-      const validators = this.makeValidators(field);
-      group[field.key] = this.fb.control('', validators);
-    });
-    return this.fb.group(group);
-  }
-
-  makeValidators(field: FormField): ValidatorFn[] {
-    const validators: ValidatorFn[] = [];
-    if (field.required) validators.push(Validators.required);
-    if (field.minLength) validators.push(Validators.minLength(field.minLength));
-    if (field.maxLength) validators.push(Validators.maxLength(field.maxLength));
-    return validators;
-  }
-
-  loadDynamicComponents(fields: FormField[] = this.formFields, parentKey = '') {
-    const viewContainerRef = this.dynamicHost.viewContainerRef;
-    fields.forEach((field) => {
-      const fieldKey = parentKey ? `${parentKey}.${field.key}` : field.key;
-      if (field.type === 'group' && field.nestedFields?.length) {
-        const formArray = this.dynamicForm.get(fieldKey) as FormArray;
-        formArray.controls.forEach((groupControl: any, index: any) => {
-          const nestedKey = `${fieldKey}[${index}]`;
-          this.loadDynamicComponents(field.nestedFields, nestedKey);
-        });
-        const buttonRef = viewContainerRef.createComponent(ButtonComponent);
-
-        buttonRef.instance.label = `Add ${field.key}`;
-        buttonRef.instance.type = 'button';
-        buttonRef.instance.clickEvent.subscribe(() =>
-          this.addFormGroup(fieldKey, field.nestedFields)
+        this.dynamicForm.addControl(
+          field.key,
+          this.fb.control('', Validators.required)
         );
-      } else {
-        const componentType =
-          this.componentMap[field.type] || TextInputComponent;
-        const componentRef = viewContainerRef.createComponent(componentType);
-        (componentRef.instance as any).field = field;
-        (componentRef.instance as any).formControl =
-          this.dynamicForm.get(fieldKey);
       }
     });
   }
-  addFormGroup(arrayKey: string, nestedFields: FormField[]) {
-    const formArray = this.dynamicForm.get(arrayKey) as FormArray;
-    const newGroup = this.createGroupFromNestedFields(nestedFields);
-    formArray.push(newGroup);
-    const newGroupKey = `${arrayKey}[${formArray.length - 1}]`;
-    this.loadDynamicComponents(nestedFields, newGroupKey);
-    const viewContainerRef = this.dynamicHost.viewContainerRef;
-    const buttonRef = viewContainerRef.createComponent(ButtonComponent);
-    buttonRef.instance.label = `Remove ${arrayKey}`;
-    buttonRef.instance.type = 'button';
-    buttonRef.instance.clickEvent.subscribe(() =>
-      this.removeFormGroup(arrayKey, formArray.length - 1)
-    );
+
+  getFormArrayControls(fieldKey: string): AbstractControl[] {
+    const formArray = this.dynamicForm?.get(fieldKey) as FormArray;
+    return formArray ? formArray.controls : [];
   }
 
-  removeFormGroup(arrayKey: string, index: number) {
-    const formArray = this.dynamicForm.get(arrayKey) as FormArray;
-    if (formArray && formArray.length > index) {
-      formArray.removeAt(index);
-      this.cdr.detectChanges();
-    }
+  addGroupToFormArray(fieldKey: string, nestedFields: any[]): void {
+    const formArray = this.dynamicForm?.get(fieldKey) as FormArray;
+    const group = this.fb.group({});
+    nestedFields.forEach((field) => {
+      group.addControl(field.key, this.fb.control('', Validators.required));
+    });
+    formArray.push(group);
   }
-  onSubmit() {
-    console.log(this.dynamicForm.value);
+
+  onSubmit(): void {
+    if (this.dynamicForm?.valid) {
+      console.log(this.dynamicForm?.value);
+    } else {
+      console.log('Form is invalid');
+    }
   }
 }
