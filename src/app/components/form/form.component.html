@@ -1,27 +1,20 @@
 <form [formGroup]="dynamicForm" (ngSubmit)="onSubmit()">
   <ng-container *ngFor="let field of formFields">
     <ng-container [ngSwitch]="field.type">
-      <!-- Text Input -->
       <ng-container *ngSwitchCase="'text'">
-        <label>{{ field.label }}</label>
         <input [id]="field.key" [formControlName]="field.key" type="text" />
       </ng-container>
-      <!-- Number Input -->
       <ng-container *ngSwitchCase="'number'">
-        <label>{{ field.label }}</label>
         <input [id]="field.key" [formControlName]="field.key" type="number" />
       </ng-container>
-      <!-- Date Input -->
       <ng-container *ngSwitchCase="'date'">
         <label>{{ field.label }}</label>
         <input [id]="field.key" [formControlName]="field.key" type="date" />
       </ng-container>
-      <!-- File Input -->
       <ng-container *ngSwitchCase="'file'">
         <label>{{ field.label }}</label>
         <input [id]="field.key" [formControlName]="field.key" type="file" />
       </ng-container>
-      <!-- Radio Buttons -->
       <ng-container *ngSwitchCase="'radio'">
         <label>{{ field.label }}</label>
         <div *ngFor="let option of field.options">
@@ -35,12 +28,10 @@
           </label>
         </div>
       </ng-container>
-      <!-- Checkbox -->
       <ng-container *ngSwitchCase="'checkbox'">
         <label>{{ field.label }}</label>
         <input type="checkbox" [formControlName]="field.key" />
       </ng-container>
-      <!-- Select Input -->
       <ng-container *ngSwitchCase="'select'">
         <label>{{ field.label }}</label>
         <select [formControlName]="field.key">
@@ -49,7 +40,6 @@
           </option>
         </select>
       </ng-container>
-      <!-- Multi-Select (checkbox) -->
       <ng-container *ngSwitchCase="'multi-checkbox'">
         <label>{{ field.label }}</label>
         <div *ngFor="let option of field.options; let i = index">
@@ -62,7 +52,6 @@
           </label>
         </div>
       </ng-container>
-      <!-- Group (FormArray) -->
       <ng-container *ngSwitchCase="'group'">
         <div formArrayName="{{ field.key }}">
           <div
@@ -77,6 +66,12 @@
                 [type]="nestedField.type"
               />
             </ng-container>
+            <button
+              type="button"
+              (click)="removeGroupFromFormArray(field.key, i)"
+            >
+              Remove
+            </button>
           </div>
           <button
             type="button"

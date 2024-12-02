@@ -56,6 +56,7 @@ export class FormComponent implements OnInit {
     this.formFields.forEach((field) => {
       if (field.type === 'group') {
         this.dynamicForm.addControl(field.key, this.fb.array([]));
+        this.addGroupToFormArray(field.key, field.nestedFields);
       } else {
         this.dynamicForm.addControl(
           field.key,
@@ -77,6 +78,11 @@ export class FormComponent implements OnInit {
       group.addControl(field.key, this.fb.control('', Validators.required));
     });
     formArray.push(group);
+  }
+
+  removeGroupFromFormArray(fieldKey: string, index: number): void {
+    const formArray = this.dynamicForm.get(fieldKey) as FormArray;
+    formArray.removeAt(index);
   }
 
   onSubmit(): void {
