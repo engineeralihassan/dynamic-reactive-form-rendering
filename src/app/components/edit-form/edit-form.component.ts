@@ -95,6 +95,7 @@ export class EditFormComponent {
   }
   onSubmit() {
     console.log('form is ::', this.form.value);
+    this.dataService.formDataSubmit(this.form.value);
   }
 
   addGroup(field: FormField): void {

@@ -9,7 +9,6 @@ export class FormField {
     public required: boolean = false,
     public minLength?: number | null,
     public maxLength?: number | null,
-
     public nestedFields: FormField[] = [],
     public id?: string | null,
     public validators: string[] = []
