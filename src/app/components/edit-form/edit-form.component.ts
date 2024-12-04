@@ -27,29 +27,36 @@ import { CheckboxComponent } from '../checkbox/checkbox.component';
 import { ButtonComponent } from '../button/button.component';
 import { fromArrayLike } from 'rxjs/internal/observable/innerFrom';
 import { F } from '@angular/cdk/keycodes';
-import { RouterLink, RouterModule } from '@angular/router';
 
 @Component({
-  selector: 'app-form',
+  selector: 'app-edit-form',
   standalone: true,
   imports: [
     FormsModule,
     ReactiveFormsModule,
     CommonModule,
     ComponentHostDirective,
-    RouterModule,
-    RouterLink,
   ],
-  templateUrl: './form.component.html',
-  styleUrls: ['./form.component.scss'],
+  templateUrl: './edit-form.component.html',
+  styleUrl: './edit-form.component.scss',
 })
-export class FormComponent implements OnInit {
+export class EditFormComponent {
   form!: FormGroup;
   formData: FormField[] = [];
 
   constructor(private fb: FormBuilder, private dataService: DataService) {
     this.dataService.getFormData().subscribe((data: FormField[]) => {
       this.formData = data;
+      console.log('FormFeilds data in the edit component', this.formData);
+      setTimeout(() => {
+        this.loadData();
+      }, 1000);
+    });
+  }
+
+  loadData() {
+    this.dataService.getSubmittedFormData().subscribe((data: any) => {
+      this.form.patchValue(data);
     });
   }
 
@@ -66,38 +73,18 @@ export class FormComponent implements OnInit {
           this.createFormGroup(field.nestedFields),
         ]);
       } else {
-        group[field.key] = new FormControl('', this.generateValidators(field));
+        group[field.key] = new FormControl(null);
       }
     });
 
     return this.fb.group(group);
   }
 
-  generateValidators(field: FormField): ValidatorFn[] {
-    const fieldValidators: ValidatorFn[] = [];
-    if (field.required) {
-      fieldValidators.push(Validators.required);
-    }
-    if (field.minLength) {
-      fieldValidators.push(Validators.minLength(field.minLength));
-    }
-
-    if (field.maxLength) {
-      fieldValidators.push(Validators.maxLength(field.maxLength));
-    }
-    field.validators.forEach((pattern) => {
-      const regexValidator = Validators.pattern(pattern);
-      fieldValidators.push(regexValidator);
-    });
-
-    return fieldValidators;
-  }
-
   createFormGroup(fields: FormField[]): FormGroup {
     const group: { [key: string]: any } = {};
 
     fields.forEach((field) => {
-      group[field.key] = new FormControl(this.generateValidators(field));
+      group[field.key] = new FormControl(null);
     });
 
     return this.fb.group(group);
@@ -107,8 +94,7 @@ export class FormComponent implements OnInit {
     return this.form.get(key) as FormArray;
   }
   onSubmit() {
-    this.dataService.formDataSubmit(this.form.value);
-    console.log('FormFeilds value', this.form.value);
+    console.log('form is ::', this.form.value);
   }
 
   addGroup(field: FormField): void {
@@ -127,24 +113,5 @@ export class FormComponent implements OnInit {
   removeGroup(fieldKey: string, index: number): void {
     const formArray = this.getFormArray(fieldKey);
     formArray.removeAt(index);
-  }
-
-  getErrorMessage(controlName: string): string | null {
-    const control = this.form.get(controlName);
-    if (control && control.invalid && (control.touched || control.dirty)) {
-      if (control.errors?.['required']) {
-        return 'This field is required.';
-      }
-      if (control.errors?.['minlength']) {
-        return `Minimum length is ${control.errors['minlength'].requiredLength} characters.`;
-      }
-      if (control.errors?.['maxlength']) {
-        return `Maximum length is ${control.errors['maxlength'].requiredLength} characters.`;
-      }
-      if (control.errors?.['pattern']) {
-        return 'Invalid format.';
-      }
-    }
-    return null;
   }
 }

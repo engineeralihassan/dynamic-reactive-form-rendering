@@ -1,4 +1,4 @@
-<h1>Reactive FormDynamic Angular form From Json data</h1>
+<h2>Edit the Reactive Dynamic form from</h2>
 <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="form">
   <div *ngFor="let field of formData">
     <ng-container *ngIf="field.type !== 'group'">
@@ -105,16 +105,3 @@
 
   <button type="submit">Submit</button>
 </form>
-
-<a class="link" routerLink="/edit-form">Edit Form</a>
-
-<!-- <form
-  class="container-form"
-  [formGroup]="dynamicForm"
-  (ngSubmit)="onSubmit()"
-  [ngStyle]="{ display: isDataLoading ? 'none' : 'block' }"
->
-  <ng-container appComponentHost></ng-container>
-  <div #dynamicButtonsContainer></div>
-  <button type="submit">Submit</button>
-</form> -->

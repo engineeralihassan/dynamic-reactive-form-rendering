@@ -16,13 +16,13 @@ export class DataService {
       'text'
     ),
     new FormField('', 'time', '', 'Time', 'time'),
-    new FormField(
-      '',
-      'picture',
-      '',
-      'Please upload picture of the location',
-      'file'
-    ),
+    // new FormField(
+    //   '',
+    //   'picture',
+    //   '',
+    //   'Please upload picture of the location',
+    //   'file'
+    // ),
     new FormField('', 'light', '', 'Light Conditions', 'radio', [
       'Natural',
       'Lights Work',
@@ -89,7 +89,7 @@ export class DataService {
 
     new FormField('', 'isSevere', '', 'Checkbox', 'checkbox', [], true),
 
-    new FormField('', 'affectedAreas', '', 'Multi-checkbox', 'multi-checkbox', [
+    new FormField('', 'affectedAreas', '', 'Multi-checkbox', 'checkbox', [
       'Arm',
       'Leg',
       'Head',
@@ -148,9 +148,17 @@ export class DataService {
       ]
     ),
   ];
+  submittedData: any;
 
   constructor() {}
   getFormData() {
     return of(this.formData);
+  }
+
+  formDataSubmit(formData: any) {
+    this.submittedData = formData;
+  }
+  getSubmittedFormData() {
+    return of(this.submittedData);
   }
 }
