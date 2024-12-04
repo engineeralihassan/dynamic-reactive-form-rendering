@@ -97,7 +97,7 @@ export class FormComponent implements OnInit {
     const group: { [key: string]: any } = {};
 
     fields.forEach((field) => {
-      group[field.key] = new FormControl(this.generateValidators(field));
+      group[field.key] = new FormControl('', this.generateValidators(field));
     });
 
     return this.fb.group(group);

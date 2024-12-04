@@ -15,6 +15,12 @@
         [formControlName]="field.key"
         [placeholder]="field.key"
       />
+      <div
+        class="error-message"
+        *ngIf="form.get(field.key)?.dirty && form.get(field.key)?.invalid"
+      >
+        {{ getErrorMessage(field.key) }}
+      </div>
 
       <ng-container *ngIf="field.type === 'radio'">
         <ng-container *ngFor="let option of field.options">
